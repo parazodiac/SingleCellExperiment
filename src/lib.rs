@@ -57,8 +57,28 @@ impl<T> SingleCellExperiment<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::SingleCellExperiment;
+    use sprs::CsMat;
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn test_single_cell_experiment() {
+        let a = CsMat::new_csc(
+            (3, 3),
+            vec![0, 2, 4, 5],
+            vec![0, 1, 0, 2, 2],
+            vec![1., 2., 3., 4., 5.],
+        );
+        let b: Vec<String> = vec!["1", "2", "3"]
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect();
+        let c: Vec<String> = vec!["4", "5", "6"]
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect();
+
+        let sce = SingleCellExperiment::from_csr(a, b, c).unwrap();
+        assert_eq!(sce.cols(), 3);
+        assert_eq!(sce.rows(), 3);
     }
 }
