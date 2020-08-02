@@ -85,8 +85,8 @@ mod tests {
             .into_iter()
             .map(|x| x.to_string())
             .collect();
-        
-        let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()){
+
+        let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
             Ok(x) => x,
             Err(_) => unreachable!(),
         };
