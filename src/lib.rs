@@ -34,6 +34,10 @@ impl<T> SingleCellExperiment<T> {
         return self.cols.clone();
     }
 
+    pub fn counts(self) -> CsMat<T> {
+        return self.counts;
+    }
+
     pub fn from_csr(
         counts: CsMat<T>,
         rows: Vec<String>,
@@ -60,14 +64,19 @@ mod tests {
     use super::SingleCellExperiment;
     use sprs::CsMat;
 
-    #[test]
-    fn test_single_cell_experiment() {
+    fn get_test_matrix() -> CsMat<f32> {
         let a = CsMat::new_csc(
             (3, 3),
             vec![0, 2, 4, 5],
             vec![0, 1, 0, 2, 2],
             vec![1., 2., 3., 4., 5.],
         );
+        return a;
+    }
+
+    #[test]
+    fn test_single_cell_experiment() {
+        let a = get_test_matrix();
         let b: Vec<String> = vec!["1", "2", "3"]
             .into_iter()
             .map(|x| x.to_string())
@@ -76,9 +85,19 @@ mod tests {
             .into_iter()
             .map(|x| x.to_string())
             .collect();
+        
+        let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()){
+            Ok(x) => x,
+            Err(_) => unreachable!(),
+        };
 
-        let sce = SingleCellExperiment::from_csr(a, b, c).unwrap();
         assert_eq!(sce.cols(), 3);
         assert_eq!(sce.rows(), 3);
+
+        assert_eq!(sce.row_names(), b);
+        assert_eq!(sce.col_names(), c);
+        assert_eq!(sce.dimensions(), (3, 3));
+        assert_eq!(sce.nnz(), 5);
+        assert_eq!(sce.counts(), get_test_matrix());
     }
 }
