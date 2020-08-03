@@ -3,17 +3,20 @@ use std::fs::File;
 use std::io::Write;
 use std::io::{BufRead, BufReader, BufWriter};
 
-use sprs::CsMat;
 use flate2::write::GzEncoder;
 use flate2::Compression;
+use sprs::CsMat;
 
 // reads the CSV format single cell matrix from the given path
 pub fn reader<MatValT, ReaderT>(
     buffered: BufReader<ReaderT>,
     num_rows: usize,
     num_cols: usize,
-) -> Result<CsMat<MatValT>, Box<dyn Error>> 
- where MatValT: std::str::FromStr + Copy, ReaderT: std::io::Read {
+) -> Result<CsMat<MatValT>, Box<dyn Error>>
+where
+    MatValT: std::str::FromStr + Copy,
+    ReaderT: std::io::Read,
+{
     let ballpark: usize = ((num_rows * num_cols) as f64 / 8.0) as usize;
     let mut ind_ptr = vec![0; num_rows + 1];
     let mut data = Vec::with_capacity(ballpark);
@@ -34,20 +37,14 @@ pub fn reader<MatValT, ReaderT>(
         }
     }
 
-    Ok(CsMat::new_csc(
-        (num_rows, num_cols), 
-        ind_ptr, 
-        indices, 
-        data
-    ))
+    Ok(CsMat::new_csc((num_rows, num_cols), ind_ptr, indices, data))
 }
 
 // writes the CSV format single cell matrix into the given path
-pub fn writer<MatValT>(
-    path_str: &str,
-    matrix: &CsMat<MatValT>,
-) -> Result<(), Box<dyn Error>> 
-where MatValT: std::fmt::Display + num::traits::Zero + Copy {
+pub fn writer<MatValT>(path_str: &str, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>>
+where
+    MatValT: std::fmt::Display + num::traits::Zero + Copy,
+{
     let quants_file_handle = File::create(path_str)?;
 
     // writing matrix
