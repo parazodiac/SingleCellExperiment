@@ -24,7 +24,9 @@ where
         assert_eq!(values.len(), num_cols);
 
         for (column_id, val) in values.into_iter().enumerate() {
-            if val == MatValT::zero() { continue; }
+            if val == MatValT::zero() {
+                continue;
+            }
             tri_matrix.add_triplet(row_id, column_id, val);
         }
     }
