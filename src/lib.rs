@@ -52,7 +52,17 @@ impl<T> SingleCellExperiment<T> {
         return &self.counts;
     }
 
-    pub fn from_csr(
+    pub fn transpose_into(self) -> SingleCellExperiment<T> {
+        let row_names = self.row_names().to_owned();
+        let col_names = self.col_names().to_owned();
+        SingleCellExperiment {
+            counts: self.counts.transpose_into(),
+            rows: col_names,
+            cols: row_names,
+        }
+    }
+
+    pub fn from_csc(
         counts: CsMat<T>,
         rows: Vec<String>,
         cols: Vec<String>,
@@ -174,7 +184,7 @@ mod tests {
             .map(|x| x.to_string())
             .collect();
 
-        let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
+        let sce = match SingleCellExperiment::from_csc(a, b.clone(), c.clone()) {
             Ok(x) => x,
             Err(_) => unreachable!(),
         };
