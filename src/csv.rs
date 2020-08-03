@@ -5,7 +5,7 @@ use std::io::{BufRead, BufReader, BufWriter};
 
 use flate2::write::GzEncoder;
 use flate2::Compression;
-use sprs::CsMat;
+use sprs::{CsMat, TriMat};
 
 // reads the CSV format single cell matrix from the given path
 pub fn reader<MatValT, ReaderT>(
@@ -14,30 +14,22 @@ pub fn reader<MatValT, ReaderT>(
     num_cols: usize,
 ) -> Result<CsMat<MatValT>, Box<dyn Error>>
 where
-    MatValT: std::str::FromStr + Copy,
+    MatValT: std::str::FromStr + num::Num + Clone,
     ReaderT: std::io::Read,
 {
-    let ballpark: usize = ((num_rows * num_cols) as f64 / 8.0) as usize;
-    let mut ind_ptr = vec![0; num_rows + 1];
-    let mut data = Vec::with_capacity(ballpark);
-    let mut indices = Vec::with_capacity(ballpark);
-
-    let mut total_entries = 0;
+    let mut tri_matrix = TriMat::new((num_rows, num_cols));
     for (row_id, line) in buffered.lines().enumerate() {
         let record = line?;
         let values: Vec<MatValT> = record.split(",").flat_map(str::parse::<MatValT>).collect();
-
-        total_entries += values.len();
-        ind_ptr[row_id + 1] = total_entries;
-
         assert_eq!(values.len(), num_cols);
+
         for (column_id, val) in values.into_iter().enumerate() {
-            indices.push(column_id);
-            data.push(val as MatValT);
+            if val == MatValT::zero() { continue; }
+            tri_matrix.add_triplet(row_id, column_id, val);
         }
     }
 
-    Ok(CsMat::new_csc((num_rows, num_cols), ind_ptr, indices, data))
+    Ok(tri_matrix.to_csc())
 }
 
 // writes the CSV format single cell matrix into the given path

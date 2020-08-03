@@ -16,7 +16,7 @@ use std::io::BufReader;
 use sprs::CsMat;
 use std::error::Error;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SingleCellExperiment<T> {
     counts: CsMat<T>,
     rows: Vec<String>,
@@ -32,7 +32,7 @@ impl<T> SingleCellExperiment<T> {
         return self.counts.rows();
     }
 
-    pub fn dimensions(&self) -> (usize, usize) {
+    pub fn shape(&self) -> (usize, usize) {
         return (self.counts.rows(), self.counts.cols());
     }
 
@@ -116,7 +116,7 @@ impl<T> SingleCellExperiment<T> {
         cols: Vec<String>,
     ) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
     where
-        T: std::str::FromStr + Copy,
+        T: std::str::FromStr + num::Num + Clone,
     {
         let file_handle = File::open(file_path)?;
         let file = BufReader::new(GzDecoder::new(file_handle));
@@ -172,8 +172,7 @@ mod tests {
         return a;
     }
 
-    #[test]
-    fn test_single_cell_experiment() {
+    fn get_test_sce_data() -> (CsMat<f32>, Vec<String>, Vec<String>) {
         let a = get_test_matrix();
         let b: Vec<String> = vec!["1", "2", "3"]
             .into_iter()
@@ -184,7 +183,13 @@ mod tests {
             .map(|x| x.to_string())
             .collect();
 
-        let sce = match SingleCellExperiment::from_csc(a, b.clone(), c.clone()) {
+        (a, b, c)
+    }
+
+    #[test]
+    fn test_single_cell_experiment() {
+        let (a, b, c) = get_test_sce_data();
+        let sce = match SingleCellExperiment::from_csc(a.clone(), b.clone(), c.clone()) {
             Ok(x) => x,
             Err(_) => unreachable!(),
         };
@@ -194,8 +199,30 @@ mod tests {
 
         assert_eq!(sce.row_names().to_owned(), b);
         assert_eq!(sce.col_names().to_owned(), c);
-        assert_eq!(sce.dimensions(), (3, 3));
+        assert_eq!(sce.shape(), (3, 3));
         assert_eq!(sce.nnz(), 5);
         assert_eq!(sce.counts().to_owned(), get_test_matrix());
+
+        let sce_t = match SingleCellExperiment::from_csc(a.transpose_into(), c.clone(), b.clone()) {
+            Ok(x) => x,
+            Err(_) => unreachable!(),
+        };
+        assert_eq!(sce.transpose_into(), sce_t);
+    }
+
+    #[test]
+    fn test_csv() {
+        let (a, b, c) = get_test_sce_data();
+        let sce = match SingleCellExperiment::from_csc(a.clone(), b.clone(), c.clone()) {
+            Ok(x) => x,
+            Err(_) => unreachable!(),
+        };
+
+        let sce_csv = match SingleCellExperiment::from_csv("./data/test.csv.gz", b.clone(), c.clone()) {
+            Ok(x) => x,
+            Err(_) => unreachable!(),
+        };
+        
+        assert_eq!(sce, sce_csv);
     }
 }
