@@ -141,10 +141,10 @@ mod tests {
         assert_eq!(sce.cols(), 3);
         assert_eq!(sce.rows(), 3);
 
-        assert_eq!(sce.row_names(), b);
-        assert_eq!(sce.col_names(), c);
+        assert_eq!(sce.row_names().to_owned(), b);
+        assert_eq!(sce.col_names().to_owned(), c);
         assert_eq!(sce.dimensions(), (3, 3));
         assert_eq!(sce.nnz(), 5);
-        assert_eq!(sce.counts(), get_test_matrix());
+        assert_eq!(sce.counts().to_owned(), get_test_matrix());
     }
 }
