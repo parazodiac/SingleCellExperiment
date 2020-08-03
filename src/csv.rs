@@ -31,7 +31,7 @@ where
         }
     }
 
-    Ok(tri_matrix.to_csc())
+    Ok(tri_matrix.to_csr())
 }
 
 // writes the CSV format single cell matrix into the given path
@@ -87,6 +87,7 @@ where
             write!(&mut file, ",{}", zero)?;
             column_id_validator += 1;
         }
+        writeln!(&mut file, "")?;
     } // end row iterator
 
     Ok(())

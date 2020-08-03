@@ -110,12 +110,13 @@ pub fn reader(
     }
 
     assert_eq!(global_pointer, total_nnz);
-    Ok(CsMat::new_csc(
+    let matrix = CsMat::new_csc(
         (num_rows, num_cols),
         bit_vector_lengths,
         indices,
         data,
-    ))
+    );
+    Ok(matrix.into_csr())
 }
 
 // writes the EDS format single cell matrix into the given path
@@ -147,7 +148,7 @@ pub fn writer(path_str: &str, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Err
             bit_vecs[i] |= 128u8 >> j;
         }
 
-        let mut bin_exp: Vec<u8> = vec![0_u8; values.len() * mem::size_of::<&MatValT>()];
+        let mut bin_exp: Vec<u8> = vec![0_u8; values.len() * 4];
 
         // NOTE: if we change MatValT, double check below line
         LittleEndian::write_f32_into(&values, &mut bin_exp);

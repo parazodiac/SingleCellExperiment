@@ -11,7 +11,7 @@ where
     ReaderT: std::io::Read,
 {
     let matrix = sprs::io::read_matrix_market_from_bufread(&mut buffered)?;
-    Ok(matrix.to_csc())
+    Ok(matrix.to_csr())
 }
 
 // reads the MTX format single cell matrix from the given path
