@@ -1,6 +1,12 @@
+extern crate byteorder;
+extern crate flate2;
+extern crate math;
 extern crate sprs;
 
+mod eds;
+
 use sprs::CsMat;
+use std::error::Error;
 
 #[derive(Debug)]
 pub struct SingleCellExperiment<T> {
@@ -26,29 +32,31 @@ impl<T> SingleCellExperiment<T> {
         return self.counts.nnz();
     }
 
-    pub fn row_names(&self) -> Vec<String> {
-        return self.rows.clone();
+    pub fn row_names(&self) -> &Vec<String> {
+        return &self.rows;
     }
 
-    pub fn col_names(&self) -> Vec<String> {
-        return self.cols.clone();
+    pub fn col_names(&self) -> &Vec<String> {
+        return &self.cols;
     }
 
-    pub fn counts(self) -> CsMat<T> {
-        return self.counts;
+    pub fn counts(&self) -> &CsMat<T> {
+        return &self.counts;
     }
 
     pub fn from_csr(
         counts: CsMat<T>,
         rows: Vec<String>,
         cols: Vec<String>,
-    ) -> Result<SingleCellExperiment<T>, &'static str> {
+    ) -> Result<SingleCellExperiment<T>, String> {
         if rows.len() != counts.rows() {
-            return Err("Number of rows in the matrix doesn't match the row names");
+            return Err("Number of rows in the matrix doesn't match the row names".to_owned());
         }
 
         if cols.len() != counts.cols() {
-            return Err("Number of columns in the matrix doesn't match the column names");
+            return Err(
+                "Number of columns in the matrix doesn't match the column names".to_owned(),
+            );
         }
 
         Ok(SingleCellExperiment {
@@ -56,6 +64,45 @@ impl<T> SingleCellExperiment<T> {
             rows: rows,
             cols: cols,
         })
+    }
+
+    //pub fn from_csv(file_path: &str) -> Result<SingleCellExperiment<T>, Box<dyn Error>> {
+    //    let sce: SingleCellExperiment<T> = csv::reader(file_path)?;
+    //    return sce
+    //}
+
+    //pub fn from_mtx(
+    //    file_path: &str,
+    //    rows: Vec<String>,
+    //    cols: Vec<String>,
+    //) -> Result<SingleCellExperiment<T>, Box<dyn Error>> {
+    //    let counts_matrix: CsMat<T> = mtx::reader(file_path)?;
+
+    //    Ok(SingleCellExperiment{
+    //        counts: counts_matrix,
+    //        rows: rows,
+    //        cols: cols,
+    //    })
+    //}
+}
+
+impl SingleCellExperiment<f32> {
+    pub fn from_eds(
+        file_path: &str,
+        rows: Vec<String>,
+        cols: Vec<String>,
+    ) -> Result<SingleCellExperiment<f32>, Box<dyn Error>> {
+        let counts_matrix: CsMat<f32> = eds::reader(file_path, rows.len(), cols.len())?;
+
+        Ok(SingleCellExperiment {
+            counts: counts_matrix,
+            rows: rows,
+            cols: cols,
+        })
+    }
+
+    pub fn to_eds(file_path: &str, sce: &SingleCellExperiment<f32>) -> Result<(), Box<dyn Error>> {
+        eds::writer(file_path, sce.counts())
     }
 }
 
