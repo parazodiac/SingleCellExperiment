@@ -2,8 +2,15 @@ extern crate byteorder;
 extern crate flate2;
 extern crate math;
 extern crate sprs;
+extern crate num;
+extern crate num_traits;
 
 pub mod eds;
+pub mod mtx;
+
+use std::fs::File;
+use std::io::BufReader;
+use flate2::read::GzDecoder;
 
 use sprs::CsMat;
 use std::error::Error;
@@ -71,19 +78,30 @@ impl<T> SingleCellExperiment<T> {
     //    return sce
     //}
 
-    //pub fn from_mtx(
-    //    file_path: &str,
-    //    rows: Vec<String>,
-    //    cols: Vec<String>,
-    //) -> Result<SingleCellExperiment<T>, Box<dyn Error>> {
-    //    let counts_matrix: CsMat<T> = mtx::reader(file_path)?;
+    pub fn from_mtx(
+        file_path: &str,
+        rows: Vec<String>,
+        cols: Vec<String>,
+    ) -> Result<SingleCellExperiment<T>, Box<dyn Error>> 
+    where T: Clone + num_traits::Num +  num_traits::NumCast{
+        let file_handle = File::open(file_path)?;
+        let file = BufReader::new( GzDecoder::new(file_handle) );
+        let counts_matrix: CsMat<T> = mtx::reader(file)?;
 
-    //    Ok(SingleCellExperiment{
-    //        counts: counts_matrix,
-    //        rows: rows,
-    //        cols: cols,
-    //    })
-    //}
+        Ok(SingleCellExperiment{
+            counts: counts_matrix,
+            rows: rows,
+            cols: cols,
+        })
+    }
+
+    pub fn to_mtx (
+        file_path: &str,
+        matrix: &SingleCellExperiment<T>,
+    ) -> Result<(), Box<dyn Error>> 
+    where T: std::fmt::Display + Copy {
+        mtx::writer(file_path, matrix.counts())
+    }
 }
 
 impl SingleCellExperiment<f32> {
