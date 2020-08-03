@@ -3,7 +3,7 @@ extern crate flate2;
 extern crate math;
 extern crate sprs;
 
-mod eds;
+pub mod eds;
 
 use sprs::CsMat;
 use std::error::Error;
