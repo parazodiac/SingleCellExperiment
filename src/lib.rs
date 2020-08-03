@@ -7,6 +7,7 @@ extern crate num_traits;
 
 pub mod eds;
 pub mod mtx;
+pub mod csv;
 
 use std::fs::File;
 use std::io::BufReader;
@@ -73,17 +74,12 @@ impl<T> SingleCellExperiment<T> {
         })
     }
 
-    //pub fn from_csv(file_path: &str) -> Result<SingleCellExperiment<T>, Box<dyn Error>> {
-    //    let sce: SingleCellExperiment<T> = csv::reader(file_path)?;
-    //    return sce
-    //}
-
     pub fn from_mtx(
         file_path: &str,
         rows: Vec<String>,
         cols: Vec<String>,
     ) -> Result<SingleCellExperiment<T>, Box<dyn Error>> 
-    where T: Clone + num_traits::Num +  num_traits::NumCast{
+    where T: Clone + num_traits::Num +  num_traits::NumCast {
         let file_handle = File::open(file_path)?;
         let file = BufReader::new( GzDecoder::new(file_handle) );
         let counts_matrix: CsMat<T> = mtx::reader(file)?;
@@ -101,6 +97,31 @@ impl<T> SingleCellExperiment<T> {
     ) -> Result<(), Box<dyn Error>> 
     where T: std::fmt::Display + Copy {
         mtx::writer(file_path, matrix.counts())
+    }
+
+    pub fn from_csv(
+        file_path: &str,
+        rows: Vec<String>,
+        cols: Vec<String>,
+    ) -> Result<SingleCellExperiment<T>, Box<dyn Error>> 
+    where T: std::str::FromStr + Copy {
+        let file_handle = File::open(file_path)?;
+        let file = BufReader::new( GzDecoder::new(file_handle) );
+        let counts_matrix: CsMat<T> = csv::reader(file, rows.len(), cols.len())?;
+
+        Ok(SingleCellExperiment{
+            counts: counts_matrix,
+            rows: rows,
+            cols: cols,
+        })
+    }
+
+    pub fn to_csv (
+        file_path: &str,
+        matrix: &SingleCellExperiment<T>,
+    ) -> Result<(), Box<dyn Error>> 
+    where T: std::fmt::Display + Copy + num::traits::Zero {
+        csv::writer(file_path, matrix.counts())
     }
 }
 
