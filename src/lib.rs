@@ -1,4 +1,5 @@
 extern crate byteorder;
+extern crate csv as ext_csv;
 extern crate flate2;
 extern crate math;
 extern crate num;
@@ -9,7 +10,6 @@ pub mod csv;
 pub mod eds;
 pub mod mtx;
 
-use flate2::read::GzDecoder;
 use std::fs::File;
 use std::io::BufReader;
 
@@ -109,10 +109,10 @@ impl<T> SingleCellExperiment<T> {
         cols: Vec<String>,
     ) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
     where
-        T: std::str::FromStr + num::Num + Clone,
+        T: std::str::FromStr + num::Num + Clone
     {
         let file_handle = File::open(file_path)?;
-        let file = BufReader::new(GzDecoder::new(file_handle));
+        let file = BufReader::new(file_handle);
         let counts_matrix: CsMat<T> = csv::reader(file, rows.len(), cols.len())?;
 
         Ok(SingleCellExperiment {
@@ -131,7 +131,7 @@ impl<T> SingleCellExperiment<T> {
 
     pub fn to_csv(&self, file_path: &str) -> Result<(), Box<dyn Error>>
     where
-        T: std::fmt::Display + Copy + num::traits::Zero,
+        T: Copy + num::traits::Zero + std::fmt::Display
     {
         csv::writer(file_path, self.counts())
     }
