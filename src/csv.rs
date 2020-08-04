@@ -38,12 +38,11 @@ where
 // writes the CSV format single cell matrix into the given path
 pub fn writer<MatValT>(path_str: &str, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>>
 where
-    MatValT: Copy + num::traits::Zero + std::fmt::Display
+    MatValT: Copy + num::traits::Zero + std::fmt::Display,
 {
     // writing matrix
     let file = File::create(path_str)?;
-    let mut wtr = ext_csv::WriterBuilder::new()
-        .from_writer(file);
+    let mut wtr = ext_csv::WriterBuilder::new().from_writer(file);
 
     let num_columns = matrix.cols();
     let zero: MatValT = MatValT::zero();

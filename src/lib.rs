@@ -109,7 +109,7 @@ impl<T> SingleCellExperiment<T> {
         cols: Vec<String>,
     ) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
     where
-        T: std::str::FromStr + num::Num + Clone
+        T: std::str::FromStr + num::Num + Clone,
     {
         let file_handle = File::open(file_path)?;
         let file = BufReader::new(file_handle);
@@ -131,7 +131,7 @@ impl<T> SingleCellExperiment<T> {
 
     pub fn to_csv(&self, file_path: &str) -> Result<(), Box<dyn Error>>
     where
-        T: Copy + num::traits::Zero + std::fmt::Display
+        T: Copy + num::traits::Zero + std::fmt::Display,
     {
         csv::writer(file_path, self.counts())
     }
