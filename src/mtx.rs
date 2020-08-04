@@ -14,11 +14,11 @@ where
     Ok(matrix.to_csr())
 }
 
-// reads the MTX format single cell matrix from the given path
+// writes the MTX format single cell matrix from the given path
 pub fn writer<MatValT>(_path_str: &str, _matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>>
 where
-    MatValT: std::fmt::Display + Copy,
+    MatValT: std::fmt::Display + Copy + sprs::num_kinds::PrimitiveKind,
 {
-    //sprs::io::write_matrix_market(_path_str, &_matrix)?;
+    sprs::io::write_matrix_market(_path_str, _matrix)?;
     Ok(())
 }

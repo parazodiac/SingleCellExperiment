@@ -93,7 +93,7 @@ impl<T> SingleCellExperiment<T> {
         T: Clone + num_traits::Num + num_traits::NumCast,
     {
         let file_handle = File::open(file_path)?;
-        let file = BufReader::new(GzDecoder::new(file_handle));
+        let file = BufReader::new(file_handle);
         let counts_matrix: CsMat<T> = mtx::reader(file)?;
 
         Ok(SingleCellExperiment {
@@ -124,7 +124,7 @@ impl<T> SingleCellExperiment<T> {
 
     pub fn to_mtx(&self, file_path: &str) -> Result<(), Box<dyn Error>>
     where
-        T: std::fmt::Display + Copy,
+        T: std::fmt::Display + Copy + sprs::num_kinds::PrimitiveKind,
     {
         mtx::writer(file_path, self.counts())
     }
@@ -167,7 +167,7 @@ mod tests {
             (3, 3),
             vec![0, 2, 4, 5],
             vec![0, 1, 0, 2, 2],
-            vec![1., 2., 3., 4., 5.],
+            vec![1.2, 2.3, 3.4, 4.5, 5.6],
         )
     }
 
@@ -213,7 +213,7 @@ mod tests {
         let (a, b, c) = get_test_sce_f32_data();
         let sce = match SingleCellExperiment::from_csr(a.clone(), b.clone(), c.clone()) {
             Ok(x) => x,
-            Err(_) => unreachable!(),
+            Err(y) => panic!("ERROR: {}", y),
         };
 
         assert_eq!(sce.cols(), 3);
@@ -223,11 +223,11 @@ mod tests {
         assert_eq!(sce.col_names().to_owned(), c);
         assert_eq!(sce.shape(), (3, 3));
         assert_eq!(sce.nnz(), 5);
-        assert_eq!(sce.counts().to_owned(), get_test_matrix_f32());
+        assert_eq!(sce.counts().clone(), get_test_matrix_f32());
 
         let sce_t = match SingleCellExperiment::from_csr(a.transpose_into(), c.clone(), b.clone()) {
             Ok(x) => x,
-            Err(_) => unreachable!(),
+            Err(y) => panic!("ERROR: {}", y),
         };
         assert_eq!(sce.transpose_into(), sce_t);
     }
@@ -243,7 +243,7 @@ mod tests {
         let (a, b, c) = get_test_sce_f32_data();
         let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
             Ok(x) => x,
-            Err(_) => unreachable!(),
+            Err(y) => panic!("ERROR: {}", y),
         };
 
         let file = get_temp_file(".csv.gz".to_owned());
@@ -268,7 +268,7 @@ mod tests {
         let (a, b, c) = get_test_sce_usize_data();
         let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
             Ok(x) => x,
-            Err(_) => unreachable!(),
+            Err(y) => panic!("ERROR: {}", y),
         };
 
         let file = get_temp_file(".csv.usize.gz".to_owned());
@@ -294,7 +294,7 @@ mod tests {
         let (a, b, c) = get_test_sce_f32_data();
         let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
             Ok(x) => x,
-            Err(_) => unreachable!(),
+            Err(y) => panic!("ERROR: {}", y),
         };
 
         let file = get_temp_file(".eds.gz".to_owned());
@@ -314,20 +314,54 @@ mod tests {
         std::fs::remove_file(fname).expect("can't remove temp file");
     }
 
-    //    #[test]
-    //    fn test_from_mtx() {
-    //        let (a, b, c) = get_test_sce_data();
-    //        let sce = match SingleCellExperiment::from_csr(a.clone(), b.clone(), c.clone()) {
-    //            Ok(x) => x,
-    //            Err(_) => unreachable!(),
-    //        };
-    //
-    //        let sce_csv =
-    //            match SingleCellExperiment::from_mtx("./data/test.mtx.gz", b.clone(), c.clone()) {
-    //                Ok(x) => x,
-    //                Err(_) => unreachable!(),
-    //            };
-    //
-    //        assert_eq!(sce, sce_csv);
-    //    }
+    #[test]
+    fn test_mtx_f32() {
+        let (a, b, c) = get_test_sce_f32_data();
+        let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
+            Ok(x) => x,
+            Err(y) => panic!("ERROR: {}", y),
+        };
+
+        let file = get_temp_file(".mtx".to_owned());
+        let fname = file.to_str().unwrap();
+        match sce.to_mtx(fname) {
+            Ok(_) => (),
+            Err(y) => panic!("ERROR: {}", y),
+        };
+        println!("{:?}", fname);
+
+        let sce_mtx: SingleCellExperiment<f32> = match SingleCellExperiment::from_mtx(fname, b, c) {
+            Ok(x) => x,
+            Err(y) => panic!("ERROR: {}", y),
+        };
+
+        assert_eq!(sce, sce_mtx);
+        std::fs::remove_file(fname).expect("can't remove temp file");
+    }
+
+    #[test]
+    fn test_mtx_usize() {
+        let (a, b, c) = get_test_sce_usize_data();
+        let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
+            Ok(x) => x,
+            Err(_) => unreachable!(),
+        };
+
+        let file = get_temp_file("_usize.mtx".to_owned());
+        let fname = file.to_str().unwrap();
+        match sce.to_mtx(fname) {
+            Ok(_) => (),
+            Err(y) => panic!("ERROR: {}", y),
+        };
+        println!("{:?}", fname);
+
+        let sce_mtx: SingleCellExperiment<usize> = match SingleCellExperiment::from_mtx(fname, b, c)
+        {
+            Ok(x) => x,
+            Err(y) => panic!("ERROR: {}", y),
+        };
+
+        assert_eq!(sce, sce_mtx);
+        std::fs::remove_file(fname).expect("can't remove temp file");
+    }
 }
