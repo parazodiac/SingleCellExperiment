@@ -11,8 +11,8 @@ pub mod eds;
 pub mod mtx;
 
 use sprs::CsMat;
-use std::path::Path;
 use std::error::Error;
+use std::path::Path;
 
 #[derive(Debug, PartialEq)]
 pub struct SingleCellExperiment<T> {
