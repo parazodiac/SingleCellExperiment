@@ -23,31 +23,31 @@ pub struct SingleCellExperiment<T> {
 
 impl<T> SingleCellExperiment<T> {
     pub fn cols(&self) -> usize {
-        self.counts.cols();
+        self.counts.cols()
     }
 
     pub fn rows(&self) -> usize {
-        self.counts.rows();
+        self.counts.rows()
     }
 
     pub fn shape(&self) -> (usize, usize) {
-        (self.counts.rows(), self.counts.cols());
+        (self.counts.rows(), self.counts.cols())
     }
 
     pub fn nnz(&self) -> usize {
-        self.counts.nnz();
+        self.counts.nnz()
     }
 
     pub fn row_names(&self) -> &Vec<String> {
-        &self.rows;
+        &self.rows
     }
 
     pub fn col_names(&self) -> &Vec<String> {
-        &self.cols;
+        &self.cols
     }
 
     pub fn counts(&self) -> &CsMat<T> {
-        &self.counts;
+        &self.counts
     }
 
     pub fn transpose_into(self) -> SingleCellExperiment<T> {
