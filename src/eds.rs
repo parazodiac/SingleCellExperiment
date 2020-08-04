@@ -1,7 +1,9 @@
 use std::error::Error;
-use std::fs::{canonicalize, File};
+use std::fs::File;
 use std::io;
 use std::io::{BufReader, BufWriter, Read, Write};
+use std::mem;
+use std::path::Path;
 
 use byteorder::{ByteOrder, LittleEndian};
 use flate2::read::GzDecoder;
@@ -11,7 +13,6 @@ use flate2::write::GzEncoder;
 use flate2::Compression;
 
 use sprs::CsMat;
-use std::mem;
 
 pub type MatValT = f32;
 
@@ -50,12 +51,10 @@ fn get_reserved_spaces(
 
 // reads the EDS format single cell matrix from the given path
 pub fn reader(
-    input_path: &str,
+    file_path: &Path,
     num_rows: usize,
     num_cols: usize,
 ) -> Result<CsMat<MatValT>, Box<dyn Error>> {
-    let file_path = canonicalize(input_path)?;
-
     // reading the matrix
     let file_handle = File::open(file_path.clone())?;
     let buffered = BufReader::new(file_handle);
@@ -115,9 +114,9 @@ pub fn reader(
 }
 
 // writes the EDS format single cell matrix into the given path
-pub fn writer(path_str: &str, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>> {
-    let quants_file_handle = File::create(path_str)?;
-    let buffered = BufWriter::new(quants_file_handle);
+pub fn writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>> {
+    let file_handle = File::create(file_path)?;
+    let buffered = BufWriter::new(file_handle);
     let mut file = GzEncoder::new(buffered, Compression::default());
 
     let num_bit_vecs: usize = round::ceil(matrix.cols() as f64 / 8.0, 0) as usize;

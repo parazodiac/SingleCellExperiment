@@ -141,7 +141,8 @@ impl SingleCellExperiment<f32> {
         rows: Vec<String>,
         cols: Vec<String>,
     ) -> Result<SingleCellExperiment<f32>, Box<dyn Error>> {
-        let counts_matrix: CsMat<f32> = eds::reader(file_path, rows.len(), cols.len())?;
+        let file = Path::new(file_path);
+        let counts_matrix: CsMat<f32> = eds::reader(file, rows.len(), cols.len())?;
 
         Ok(SingleCellExperiment {
             counts: counts_matrix,
@@ -151,7 +152,8 @@ impl SingleCellExperiment<f32> {
     }
 
     pub fn to_eds(&self, file_path: &str) -> Result<(), Box<dyn Error>> {
-        eds::writer(file_path, self.counts())
+        let file = Path::new(file_path);
+        eds::writer(file, self.counts())
     }
 }
 
