@@ -10,10 +10,8 @@ pub mod csv;
 pub mod eds;
 pub mod mtx;
 
-use std::fs::File;
-use std::io::BufReader;
-
 use sprs::CsMat;
+use std::path::Path;
 use std::error::Error;
 
 #[derive(Debug, PartialEq)]
@@ -92,8 +90,7 @@ impl<T> SingleCellExperiment<T> {
     where
         T: Clone + num_traits::Num + num_traits::NumCast,
     {
-        let file_handle = File::open(file_path)?;
-        let file = BufReader::new(file_handle);
+        let file = Path::new(file_path);
         let counts_matrix: CsMat<T> = mtx::reader(file)?;
 
         Ok(SingleCellExperiment {
@@ -111,8 +108,7 @@ impl<T> SingleCellExperiment<T> {
     where
         T: std::str::FromStr + num::Num + Clone,
     {
-        let file_handle = File::open(file_path)?;
-        let file = BufReader::new(file_handle);
+        let file = Path::new(file_path);
         let counts_matrix: CsMat<T> = csv::reader(file, rows.len(), cols.len())?;
 
         Ok(SingleCellExperiment {
@@ -126,14 +122,16 @@ impl<T> SingleCellExperiment<T> {
     where
         T: std::fmt::Display + Copy + sprs::num_kinds::PrimitiveKind,
     {
-        mtx::writer(file_path, self.counts())
+        let file = Path::new(file_path);
+        mtx::writer(file, self.counts())
     }
 
     pub fn to_csv(&self, file_path: &str) -> Result<(), Box<dyn Error>>
     where
         T: Copy + num::traits::Zero + std::fmt::Display,
     {
-        csv::writer(file_path, self.counts())
+        let file = Path::new(file_path);
+        csv::writer(file, self.counts())
     }
 }
 

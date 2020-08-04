@@ -1,23 +1,21 @@
 use std::error::Error;
-use std::fs::File;
-use std::io::BufReader;
+use std::path::Path;
 
 use sprs::{CsMat, TriMat};
 
 // reads the CSV format single cell matrix from the given path
-pub fn reader<MatValT, ReaderT>(
-    buffered: BufReader<ReaderT>,
+pub fn reader<MatValT>(
+    file_path: &Path,
     num_rows: usize,
     num_cols: usize,
 ) -> Result<CsMat<MatValT>, Box<dyn Error>>
 where
     MatValT: std::str::FromStr + num::Num + Clone,
-    ReaderT: std::io::Read,
 {
     let mut tri_matrix = TriMat::new((num_rows, num_cols));
     let mut rdr = ext_csv::ReaderBuilder::new()
         .has_headers(false)
-        .from_reader(buffered);
+        .from_path(file_path)?;
 
     for (row_id, line) in rdr.records().enumerate() {
         let record = line?;
@@ -36,13 +34,12 @@ where
 }
 
 // writes the CSV format single cell matrix into the given path
-pub fn writer<MatValT>(path_str: &str, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>>
+pub fn writer<MatValT>(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>>
 where
     MatValT: Copy + num::traits::Zero + std::fmt::Display,
 {
     // writing matrix
-    let file = File::create(path_str)?;
-    let mut wtr = ext_csv::WriterBuilder::new().from_writer(file);
+    let mut wtr = ext_csv::WriterBuilder::new().from_path(file_path)?;
 
     let num_columns = matrix.cols();
     let zero: MatValT = MatValT::zero();
