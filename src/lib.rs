@@ -129,7 +129,7 @@ impl<T> SingleCellExperiment<T> {
         mtx::writer(file_path, self.counts())
     }
 
-    pub fn to_csv( &self, file_path: &str) -> Result<(), Box<dyn Error>>
+    pub fn to_csv(&self, file_path: &str) -> Result<(), Box<dyn Error>>
     where
         T: std::fmt::Display + Copy + num::traits::Zero,
     {
@@ -163,23 +163,21 @@ mod tests {
     use sprs::CsMat;
 
     fn get_test_matrix_f32() -> CsMat<f32> {
-        let a = CsMat::new_csc(
+        CsMat::new(
             (3, 3),
             vec![0, 2, 4, 5],
             vec![0, 1, 0, 2, 2],
             vec![1., 2., 3., 4., 5.],
-        );
-        return a.into_csr();
+        )
     }
 
     fn get_test_matrix_usize() -> CsMat<usize> {
-        let a = CsMat::new_csc(
+        CsMat::new(
             (3, 3),
             vec![0, 2, 4, 5],
             vec![0, 1, 0, 2, 2],
             vec![1, 2, 3, 4, 5],
-        );
-        return a.into_csr();
+        )
     }
 
     fn get_test_sce_f32_data() -> (CsMat<f32>, Vec<String>, Vec<String>) {
@@ -273,7 +271,7 @@ mod tests {
             Err(_) => unreachable!(),
         };
 
-        let file = get_temp_file(".csv.gz".to_owned());
+        let file = get_temp_file(".csv.usize.gz".to_owned());
         let fname = file.to_str().unwrap();
         match sce.to_csv(fname) {
             Ok(_) => (),
@@ -281,7 +279,8 @@ mod tests {
         };
         println!("{:?}", fname);
 
-        let sce_csv: SingleCellExperiment<usize> = match SingleCellExperiment::from_csv(fname, b, c) {
+        let sce_csv: SingleCellExperiment<usize> = match SingleCellExperiment::from_csv(fname, b, c)
+        {
             Ok(x) => x,
             Err(y) => panic!("ERROR: {}", y),
         };
@@ -306,29 +305,29 @@ mod tests {
         };
         println!("{:?}", fname);
 
-        let sce_csv: SingleCellExperiment<f32> = match SingleCellExperiment::from_eds(fname, b, c) {
+        let sce_eds: SingleCellExperiment<f32> = match SingleCellExperiment::from_eds(fname, b, c) {
             Ok(x) => x,
             Err(y) => panic!("ERROR: {}", y),
         };
 
-        assert_eq!(sce, sce_csv);
+        assert_eq!(sce, sce_eds);
         std::fs::remove_file(fname).expect("can't remove temp file");
     }
 
-//    #[test]
-//    fn test_from_mtx() {
-//        let (a, b, c) = get_test_sce_data();
-//        let sce = match SingleCellExperiment::from_csr(a.clone(), b.clone(), c.clone()) {
-//            Ok(x) => x,
-//            Err(_) => unreachable!(),
-//        };
-//
-//        let sce_csv =
-//            match SingleCellExperiment::from_mtx("./data/test.mtx.gz", b.clone(), c.clone()) {
-//                Ok(x) => x,
-//                Err(_) => unreachable!(),
-//            };
-//
-//        assert_eq!(sce, sce_csv);
-//    }
- }
+    //    #[test]
+    //    fn test_from_mtx() {
+    //        let (a, b, c) = get_test_sce_data();
+    //        let sce = match SingleCellExperiment::from_csr(a.clone(), b.clone(), c.clone()) {
+    //            Ok(x) => x,
+    //            Err(_) => unreachable!(),
+    //        };
+    //
+    //        let sce_csv =
+    //            match SingleCellExperiment::from_mtx("./data/test.mtx.gz", b.clone(), c.clone()) {
+    //                Ok(x) => x,
+    //                Err(_) => unreachable!(),
+    //            };
+    //
+    //        assert_eq!(sce, sce_csv);
+    //    }
+}

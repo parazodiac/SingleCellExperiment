@@ -39,7 +39,7 @@ fn get_reserved_spaces(
         io::copy(
             &mut file
                 .by_ref()
-                .take((num_ones * mem::size_of::<&MatValT>()) as u64),
+                .take((num_ones * mem::size_of::<MatValT>()) as u64),
             &mut io::sink(),
         )?;
         //file.seek(SeekFrom::Current((num_ones * 4) as i64))?;
@@ -96,7 +96,7 @@ pub fn reader(
         }
         assert_eq!(num_ones, one_validator);
 
-        let mut expression: Vec<u8> = vec![0; mem::size_of::<&MatValT>() * (num_ones as usize)];
+        let mut expression: Vec<u8> = vec![0; mem::size_of::<MatValT>() * (num_ones as usize)];
         let mut float_buffer: Vec<MatValT> = vec![0.0; num_ones as usize];
         file.read_exact(&mut expression[..])?;
 
@@ -110,13 +110,8 @@ pub fn reader(
     }
 
     assert_eq!(global_pointer, total_nnz);
-    let matrix = CsMat::new_csc(
-        (num_rows, num_cols),
-        bit_vector_lengths,
-        indices,
-        data,
-    );
-    Ok(matrix.into_csr())
+    let matrix = CsMat::new((num_rows, num_cols), bit_vector_lengths, indices, data);
+    Ok(matrix)
 }
 
 // writes the EDS format single cell matrix into the given path
