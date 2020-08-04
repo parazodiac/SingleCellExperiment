@@ -209,7 +209,7 @@ mod tests {
         assert_eq!(sce.nnz(), 5);
         assert_eq!(sce.counts().clone(), get_test_matrix_f32());
 
-        let sce_t = match SingleCellExperiment::from_csr(a.transpose_into(), c.clone(), b.clone()) {
+        let sce_t = match SingleCellExperiment::from_csr(a.transpose_into(), b.clone(), c.clone()) {
             Ok(x) => x,
             Err(y) => panic!("ERROR: {}", y),
         };
