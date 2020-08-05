@@ -151,41 +151,27 @@ pub fn writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn E
 }
 
 // writes the EDS format single cell matrix into the given path
-pub fn append_writer(file: &mut GzEncoder<BufWriter<File>>, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>> {
-    //let file_handle = OpenOptions::new().append(true).open(file_path)?;
-    //let buffered = BufWriter::new(file_handle);
-    //let mut file = GzEncoder::new(buffered, Compression::default());
+pub fn as_bytes(matrix_row: Vec<MatValT>, num_cols: usize) -> Result<Vec<u8>, Box<dyn Error>> {
+    let num_bit_vecs: usize = round::ceil(num_cols as f64 / 8.0, 0) as usize;
+    let mut bit_vecs: Vec<u8> = vec![0_u8; num_bit_vecs];
+    let mut values = Vec::new();
 
-    let num_bit_vecs: usize = round::ceil(matrix.cols() as f64 / 8.0, 0) as usize;
-    let mut bit_vecs: Vec<u8> = vec![0; num_bit_vecs];
+    for (col_ind, val) in matrix_row.into_iter().enumerate() {
+        if val == 0.0 as MatValT { continue }
+        values.push(val as MatValT);
 
-    for row_vec in matrix.outer_iterator() {
-        let mut positions = Vec::new();
-        let mut values = Vec::new();
-
-        for (col_ind, &val) in row_vec.iter() {
-            positions.push(col_ind);
-            values.push(val as MatValT);
-        }
-
-        // clearing old bit vector
-        bit_vecs.iter_mut().for_each(|x| *x = 0);
-
-        // refilling bit vector
-        for pos in positions {
-            let i = round::floor(pos as f64 / 8.0, 0) as usize;
-            let j = pos % 8;
-
-            bit_vecs[i] |= 128u8 >> j;
-        }
-
-        let mut bin_exp: Vec<u8> = vec![0_u8; values.len() * 4];
-
-        // NOTE: if we change MatValT, double check below line
-        LittleEndian::write_f32_into(&values, &mut bin_exp);
-        file.write_all(&bit_vecs)?;
-        file.write_all(&bin_exp)?;
+        let i = round::floor(col_ind as f64 / 8.0, 0) as usize;
+        let j = col_ind % 8;
+        bit_vecs[i] |= 128u8 >> j;
     }
 
-    Ok(())
+    let mut bin_exp: Vec<u8> = vec![0_u8; values.len() * 4];
+    if std::any::TypeId::of::<MatValT>() == std::any::TypeId::of::<f32>()  {
+            LittleEndian::write_f32_into(&values, &mut bin_exp);
+            bit_vecs.append(&mut bin_exp);
+    } else { 
+        unreachable!("EDS not supported for non float objects");
+    }
+
+    Ok(bit_vecs)
 }
