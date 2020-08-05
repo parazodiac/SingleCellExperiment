@@ -21,7 +21,7 @@ pub struct SingleCellExperiment<T> {
     cols: Vec<String>,
 }
 
-impl<T> SingleCellExperiment<T> {
+impl<'a, T: 'a + std::iter::Sum<&'a T>> SingleCellExperiment<T> {
     pub fn cols(&self) -> usize {
         self.counts.cols()
     }
@@ -48,6 +48,10 @@ impl<T> SingleCellExperiment<T> {
 
     pub fn counts(&self) -> &CsMat<T> {
         &self.counts
+    }
+
+    pub fn sum(&'a self) -> T {
+        self.counts.data().iter().sum()
     }
 
     pub fn transpose_into(self) -> SingleCellExperiment<T> {
