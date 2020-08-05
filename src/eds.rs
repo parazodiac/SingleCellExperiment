@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::mem;
@@ -113,6 +114,46 @@ pub fn reader(
 // writes the EDS format single cell matrix into the given path
 pub fn writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>> {
     let file_handle = File::create(file_path)?;
+    let buffered = BufWriter::new(file_handle);
+    let mut file = GzEncoder::new(buffered, Compression::default());
+
+    let num_bit_vecs: usize = round::ceil(matrix.cols() as f64 / 8.0, 0) as usize;
+    let mut bit_vecs: Vec<u8> = vec![0; num_bit_vecs];
+
+    for row_vec in matrix.outer_iterator() {
+        let mut positions = Vec::new();
+        let mut values = Vec::new();
+
+        for (col_ind, &val) in row_vec.iter() {
+            positions.push(col_ind);
+            values.push(val as MatValT);
+        }
+
+        // clearing old bit vector
+        bit_vecs.iter_mut().for_each(|x| *x = 0);
+
+        // refilling bit vector
+        for pos in positions {
+            let i = round::floor(pos as f64 / 8.0, 0) as usize;
+            let j = pos % 8;
+
+            bit_vecs[i] |= 128u8 >> j;
+        }
+
+        let mut bin_exp: Vec<u8> = vec![0_u8; values.len() * 4];
+
+        // NOTE: if we change MatValT, double check below line
+        LittleEndian::write_f32_into(&values, &mut bin_exp);
+        file.write_all(&bit_vecs)?;
+        file.write_all(&bin_exp)?;
+    }
+
+    Ok(())
+}
+
+// writes the EDS format single cell matrix into the given path
+pub fn append_writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>> {
+    let file_handle = OpenOptions::new().append(true).open(file_path)?;
     let buffered = BufWriter::new(file_handle);
     let mut file = GzEncoder::new(buffered, Compression::default());
 
