@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::fs::File;
-use std::fs::OpenOptions;
 use std::io;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::mem;
@@ -152,10 +151,10 @@ pub fn writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn E
 }
 
 // writes the EDS format single cell matrix into the given path
-pub fn append_writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>> {
-    let file_handle = OpenOptions::new().append(true).open(file_path)?;
-    let buffered = BufWriter::new(file_handle);
-    let mut file = GzEncoder::new(buffered, Compression::default());
+pub fn append_writer(file: &mut GzEncoder<BufWriter<File>>, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>> {
+    //let file_handle = OpenOptions::new().append(true).open(file_path)?;
+    //let buffered = BufWriter::new(file_handle);
+    //let mut file = GzEncoder::new(buffered, Compression::default());
 
     let num_bit_vecs: usize = round::ceil(matrix.cols() as f64 / 8.0, 0) as usize;
     let mut bit_vecs: Vec<u8> = vec![0; num_bit_vecs];
