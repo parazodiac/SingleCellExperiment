@@ -157,7 +157,9 @@ pub fn as_bytes(matrix_row: Vec<MatValT>, num_cols: usize) -> Result<Vec<u8>, Bo
     let mut values = Vec::new();
 
     for (col_ind, val) in matrix_row.into_iter().enumerate() {
-        if val == 0.0 as MatValT { continue }
+        if val == 0.0 as MatValT {
+            continue;
+        }
         values.push(val as MatValT);
 
         let i = round::floor(col_ind as f64 / 8.0, 0) as usize;
@@ -166,12 +168,72 @@ pub fn as_bytes(matrix_row: Vec<MatValT>, num_cols: usize) -> Result<Vec<u8>, Bo
     }
 
     let mut bin_exp: Vec<u8> = vec![0_u8; values.len() * 4];
-    if std::any::TypeId::of::<MatValT>() == std::any::TypeId::of::<f32>()  {
-            LittleEndian::write_f32_into(&values, &mut bin_exp);
-            bit_vecs.append(&mut bin_exp);
-    } else { 
+    if std::any::TypeId::of::<MatValT>() == std::any::TypeId::of::<f32>() {
+        LittleEndian::write_f32_into(&values, &mut bin_exp);
+        bit_vecs.append(&mut bin_exp);
+    } else {
         unreachable!("EDS not supported for non float objects");
     }
 
     Ok(bit_vecs)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::SingleCellExperiment;
+    use sprs::CsMat;
+
+    fn get_test_matrix_f32() -> CsMat<f32> {
+        CsMat::new(
+            (3, 3),
+            vec![0, 2, 4, 5],
+            vec![0, 1, 0, 2, 2],
+            vec![1.2, 2.3, 3.4, 4.5, 5.6],
+        )
+    }
+
+    fn get_test_sce_f32_data() -> (CsMat<f32>, Vec<String>, Vec<String>) {
+        let a = get_test_matrix_f32();
+        let b: Vec<String> = vec!["1", "2", "3"]
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect();
+        let c: Vec<String> = vec!["4", "5", "6"]
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect();
+
+        (a, b, c)
+    }
+
+    fn get_temp_file(ext: String) -> std::path::PathBuf {
+        let mut dir = std::env::temp_dir();
+        dir.push(format!("foo{}", ext));
+        dir
+    }
+
+    #[test]
+    fn test_eds_f32() {
+        let (a, b, c) = get_test_sce_f32_data();
+        let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
+            Ok(x) => x,
+            Err(y) => panic!("ERROR: {}", y),
+        };
+
+        let file = get_temp_file(".eds.gz".to_owned());
+        let fname = file.to_str().unwrap();
+        match sce.to_eds(fname) {
+            Ok(_) => (),
+            Err(y) => panic!("ERROR: {}", y),
+        };
+        println!("{:?}", fname);
+
+        let sce_eds: SingleCellExperiment<f32> = match SingleCellExperiment::from_eds(fname, b, c) {
+            Ok(x) => x,
+            Err(y) => panic!("ERROR: {}", y),
+        };
+
+        assert_eq!(sce, sce_eds);
+        std::fs::remove_file(fname).expect("can't remove temp file");
+    }
 }
