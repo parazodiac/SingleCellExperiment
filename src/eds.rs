@@ -156,11 +156,14 @@ pub fn as_bytes(matrix_row: Vec<MatValT>, num_cols: usize) -> Result<Vec<u8>, Bo
     let mut bit_vecs: Vec<u8> = vec![0_u8; num_bit_vecs];
     let mut values = Vec::new();
 
+    let error = f32::EPSILON;
     for (col_ind, val) in matrix_row.into_iter().enumerate() {
-        if val == 0.0 as MatValT {
+        let val = val as MatValT;
+
+        if (val - 0.0).abs() < error {
             continue;
         }
-        values.push(val as MatValT);
+        values.push(val);
 
         let i = round::floor(col_ind as f64 / 8.0, 0) as usize;
         let j = col_ind % 8;
