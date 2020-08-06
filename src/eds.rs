@@ -151,13 +151,13 @@ pub fn writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn E
 }
 
 // writes the EDS format single cell matrix into the given path
-pub fn as_bytes(matrix_row: Vec<MatValT>, num_cols: usize) -> Result<Vec<u8>, Box<dyn Error>> {
+pub fn as_bytes(matrix_row: &[MatValT], num_cols: usize) -> Result<Vec<u8>, Box<dyn Error>> {
     let num_bit_vecs: usize = round::ceil(num_cols as f64 / 8.0, 0) as usize;
     let mut bit_vecs: Vec<u8> = vec![0_u8; num_bit_vecs];
     let mut values = Vec::new();
 
     let error = f32::EPSILON;
-    for (col_ind, val) in matrix_row.into_iter().enumerate() {
+    for (col_ind, &val) in matrix_row.iter().enumerate() {
         let val = val as MatValT;
 
         if (val - 0.0).abs() < error {
