@@ -60,7 +60,7 @@ pub fn reader(
     let buffered = BufReader::new(file_handle);
     let file = GzDecoder::new(buffered);
 
-    let num_bit_vecs: usize = round::ceil(num_cols as f64 / 8.0, 0) as usize;
+    let num_bit_vecs: usize = (num_cols + 7) / 8 ;
     let bit_vector_lengths = get_reserved_spaces(num_bit_vecs, num_rows, file)?;
 
     let total_nnz = bit_vector_lengths[num_rows];
@@ -116,7 +116,7 @@ pub fn writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn E
     let buffered = BufWriter::new(file_handle);
     let mut file = GzEncoder::new(buffered, Compression::default());
 
-    let num_bit_vecs: usize = round::ceil(matrix.cols() as f64 / 8.0, 0) as usize;
+    let num_bit_vecs: usize = (matrix.cols() + 7) / 8;
     let mut bit_vecs: Vec<u8> = vec![0; num_bit_vecs];
 
     for row_vec in matrix.outer_iterator() {
@@ -133,7 +133,7 @@ pub fn writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn E
 
         // refilling bit vector
         for pos in positions {
-            let i = round::floor(pos as f64 / 8.0, 0) as usize;
+            let i = pos / 8;
             let j = pos % 8;
 
             bit_vecs[i] |= 128u8 >> j;
@@ -152,7 +152,7 @@ pub fn writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn E
 
 // writes the EDS format single cell matrix into the given path
 pub fn as_bytes(matrix_row: &[MatValT], num_cols: usize) -> Result<Vec<u8>, Box<dyn Error>> {
-    let num_bit_vecs: usize = round::ceil(num_cols as f64 / 8.0, 0) as usize;
+    let num_bit_vecs: usize = (num_cols + 7) / 8 ;
     let mut bit_vecs: Vec<u8> = vec![0_u8; num_bit_vecs];
     let mut values = Vec::new();
 
@@ -165,7 +165,7 @@ pub fn as_bytes(matrix_row: &[MatValT], num_cols: usize) -> Result<Vec<u8>, Box<
         }
         values.push(val);
 
-        let i = round::floor(col_ind as f64 / 8.0, 0) as usize;
+        let i = col_ind / 8 ;
         let j = col_ind % 8;
         bit_vecs[i] |= 128u8 >> j;
     }
