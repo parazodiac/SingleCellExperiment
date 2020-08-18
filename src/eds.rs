@@ -7,7 +7,6 @@ use std::path::Path;
 
 use byteorder::{ByteOrder, LittleEndian};
 use flate2::read::GzDecoder;
-use math::round;
 
 use flate2::write::GzEncoder;
 use flate2::Compression;
@@ -60,7 +59,7 @@ pub fn reader(
     let buffered = BufReader::new(file_handle);
     let file = GzDecoder::new(buffered);
 
-    let num_bit_vecs: usize = (num_cols + 7) / 8 ;
+    let num_bit_vecs: usize = (num_cols + 7) / 8;
     let bit_vector_lengths = get_reserved_spaces(num_bit_vecs, num_rows, file)?;
 
     let total_nnz = bit_vector_lengths[num_rows];
@@ -152,7 +151,7 @@ pub fn writer(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn E
 
 // writes the EDS format single cell matrix into the given path
 pub fn as_bytes(matrix_row: &[MatValT], num_cols: usize) -> Result<Vec<u8>, Box<dyn Error>> {
-    let num_bit_vecs: usize = (num_cols + 7) / 8 ;
+    let num_bit_vecs: usize = (num_cols + 7) / 8;
     let mut bit_vecs: Vec<u8> = vec![0_u8; num_bit_vecs];
     let mut values = Vec::new();
 
@@ -165,7 +164,7 @@ pub fn as_bytes(matrix_row: &[MatValT], num_cols: usize) -> Result<Vec<u8>, Box<
         }
         values.push(val);
 
-        let i = col_ind / 8 ;
+        let i = col_ind / 8;
         let j = col_ind % 8;
         bit_vecs[i] |= 128u8 >> j;
     }

@@ -1,7 +1,6 @@
 extern crate byteorder;
 extern crate csv as ext_csv;
 extern crate flate2;
-extern crate math;
 extern crate num;
 extern crate num_traits;
 extern crate sprs;
