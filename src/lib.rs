@@ -9,6 +9,7 @@ pub mod csv;
 pub mod eds;
 pub mod iter;
 pub mod mtx;
+pub mod file_names;
 
 use sprs::CsMat;
 use std::error::Error;
