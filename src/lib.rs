@@ -24,6 +24,12 @@ pub struct SingleCellExperiment<T> {
     cols: Vec<String>,
 }
 
+pub enum MatrixKind {
+    CSV,
+    EDS,
+    MTX,
+}
+
 impl<T> fmt::Debug for SingleCellExperiment<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SingleCellExperiment")
@@ -140,9 +146,9 @@ impl<T> SingleCellExperiment<T> {
         csv::writer(file, self.counts())
     }
 
-    pub fn from_tenx_v2(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>> 
+    pub fn from_tenx_v2(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
     where
-        T: Copy + num::Num + num::NumCast
+        T: Copy + num::Num + num::NumCast,
     {
         let file_names = file_names::MatFileNames::tenx_v2(cr_out)?;
 
@@ -156,9 +162,9 @@ impl<T> SingleCellExperiment<T> {
         )?)
     }
 
-    pub fn from_tenx_v3(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>> 
+    pub fn from_tenx_v3(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
     where
-        T: Copy + num::Num + num::NumCast
+        T: Copy + num::Num + num::NumCast,
     {
         let file_names = file_names::MatFileNames::tenx_v2(cr_out)?;
 
@@ -201,6 +207,43 @@ impl SingleCellExperiment<f32> {
             cellbarcode_names,
             feature_names,
         )?)
+    }
+
+    pub fn from_mat_file_names(
+        file_names: file_names::MatFileNames,
+        is_features_compressed: bool,
+        matrix_kind: MatrixKind,
+    ) -> Result<SingleCellExperiment<f32>, Box<dyn Error>> {
+        let (feature_names, cellbarcode_names) = match is_features_compressed {
+            true => (
+                utils::read_compressed_features(file_names.column_file())?,
+                utils::read_compressed_features(file_names.row_file())?,
+            ),
+            false => (
+                utils::read_features(file_names.column_file())?,
+                utils::read_features(file_names.row_file())?,
+            ),
+        };
+
+        let matrix = match matrix_kind {
+            MatrixKind::CSV => SingleCellExperiment::from_csv(
+                file_names.matrix_file().to_str().unwrap(),
+                cellbarcode_names,
+                feature_names,
+            )?,
+            MatrixKind::MTX => SingleCellExperiment::from_mtx(
+                file_names.matrix_file().to_str().unwrap(),
+                cellbarcode_names,
+                feature_names,
+            )?,
+            MatrixKind::EDS => SingleCellExperiment::from_eds(
+                file_names.matrix_file().to_str().unwrap(),
+                cellbarcode_names,
+                feature_names,
+            )?,
+        };
+
+        Ok(matrix)
     }
 }
 
