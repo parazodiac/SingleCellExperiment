@@ -158,18 +158,16 @@ impl SingleCellExperiment<f32> {
         eds::writer(file, self.counts())
     }
 
-    pub fn from_alevin(
-        alv_out: PathBuf
-    ) -> Result<SingleCellExperiment<f32>, Box<dyn Error>> {
+    pub fn from_alevin(alv_out: PathBuf) -> Result<SingleCellExperiment<f32>, Box<dyn Error>> {
         let file_names = file_names::alevin_file_names(alv_out)?;
 
         let feature_names = utils::read_features(file_names.column_file())?;
         let cellbarcode_names = utils::read_features(file_names.row_file())?;
 
         Ok(SingleCellExperiment::from_eds(
-            file_names.matrix_file().to_str().unwrap(), 
-            cellbarcode_names, 
-            feature_names
+            file_names.matrix_file().to_str().unwrap(),
+            cellbarcode_names,
+            feature_names,
         )?)
     }
 }

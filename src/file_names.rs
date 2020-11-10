@@ -4,7 +4,7 @@ use std::path::PathBuf;
 pub struct MatFileNames {
     matrix_file: PathBuf,
     column_file: PathBuf,
-    row_file: PathBuf
+    row_file: PathBuf,
 }
 
 impl MatFileNames {
@@ -33,10 +33,10 @@ pub fn alevin_file_names(mut path: PathBuf) -> Result<MatFileNames, Box<dyn Erro
     let mut row_file = path.clone();
     row_file.push("quants_mat_rows.txt");
 
-    Ok(MatFileNames{
-        matrix_file, 
+    Ok(MatFileNames {
+        matrix_file,
         column_file,
-        row_file
+        row_file,
     })
 }
 
@@ -50,10 +50,10 @@ pub fn tenx_v2_file_names(path: PathBuf) -> Result<MatFileNames, Box<dyn Error>>
     let mut row_file = path.clone();
     row_file.push("barcodes.tsv");
 
-    Ok(MatFileNames{
-        matrix_file, 
+    Ok(MatFileNames {
+        matrix_file,
         column_file,
-        row_file
+        row_file,
     })
 }
 
@@ -67,9 +67,9 @@ pub fn tenx_v3_file_names(path: PathBuf) -> Result<MatFileNames, Box<dyn Error>>
     let mut row_file = path.clone();
     row_file.push("barcodes.tsv.gz");
 
-    Ok(MatFileNames{
-        matrix_file, 
+    Ok(MatFileNames {
+        matrix_file,
         column_file,
-        row_file
+        row_file,
     })
 }
