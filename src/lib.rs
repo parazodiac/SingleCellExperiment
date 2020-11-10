@@ -10,11 +10,12 @@ pub mod eds;
 pub mod file_names;
 pub mod iter;
 pub mod mtx;
+pub mod utils;
 
 use sprs::CsMat;
 use std::error::Error;
 use std::fmt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(PartialEq)]
 pub struct SingleCellExperiment<T> {
@@ -155,6 +156,21 @@ impl SingleCellExperiment<f32> {
     pub fn to_eds(&self, file_path: &str) -> Result<(), Box<dyn Error>> {
         let file = Path::new(file_path);
         eds::writer(file, self.counts())
+    }
+
+    pub fn from_alevin(
+        alv_out: PathBuf
+    ) -> Result<SingleCellExperiment<f32>, Box<dyn Error>> {
+        let file_names = file_names::alevin_file_names(alv_out)?;
+
+        let feature_names = utils::read_features(file_names.column_file())?;
+        let cellbarcode_names = utils::read_features(file_names.row_file())?;
+
+        Ok(SingleCellExperiment::from_eds(
+            file_names.matrix_file().to_str().unwrap(), 
+            cellbarcode_names, 
+            feature_names
+        )?)
     }
 }
 
