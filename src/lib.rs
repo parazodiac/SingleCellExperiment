@@ -13,13 +13,22 @@ pub mod mtx;
 
 use sprs::CsMat;
 use std::error::Error;
+use std::fmt;
 use std::path::Path;
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub struct SingleCellExperiment<T> {
     counts: CsMat<T>,
     rows: Vec<String>,
     cols: Vec<String>,
+}
+
+impl<T> fmt::Debug for SingleCellExperiment<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SingleCellExperiment")
+            .field("matrix: ", &self.shape())
+            .finish()
+    }
 }
 
 impl<T> SingleCellExperiment<T> {
