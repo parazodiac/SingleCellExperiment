@@ -139,6 +139,38 @@ impl<T> SingleCellExperiment<T> {
         let file = Path::new(file_path);
         csv::writer(file, self.counts())
     }
+
+    pub fn from_tenx_v2(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>> 
+    where
+        T: Copy + num::Num + num::NumCast
+    {
+        let file_names = file_names::MatFileNames::tenx_v2(cr_out)?;
+
+        let feature_names = utils::read_features(file_names.column_file())?;
+        let cellbarcode_names = utils::read_features(file_names.row_file())?;
+
+        Ok(SingleCellExperiment::from_mtx(
+            file_names.matrix_file().to_str().unwrap(),
+            cellbarcode_names,
+            feature_names,
+        )?)
+    }
+
+    pub fn from_tenx_v3(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>> 
+    where
+        T: Copy + num::Num + num::NumCast
+    {
+        let file_names = file_names::MatFileNames::tenx_v2(cr_out)?;
+
+        let feature_names = utils::read_compressed_features(file_names.column_file())?;
+        let cellbarcode_names = utils::read_compressed_features(file_names.row_file())?;
+
+        Ok(SingleCellExperiment::from_mtx(
+            file_names.matrix_file().to_str().unwrap(),
+            cellbarcode_names,
+            feature_names,
+        )?)
+    }
 }
 
 impl SingleCellExperiment<f32> {
