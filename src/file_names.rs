@@ -19,57 +19,57 @@ impl MatFileNames {
     pub fn row_file(&self) -> PathBuf {
         self.row_file.clone()
     }
-}
 
-pub fn alevin_file_names(mut path: PathBuf) -> Result<MatFileNames, Box<dyn Error>> {
-    path.push("alevin");
+    pub fn from_alevin(mut path: PathBuf) -> Result<MatFileNames, Box<dyn Error>> {
+        path.push("alevin");
 
-    let mut matrix_file = path.clone();
-    matrix_file.push("quants_mat.gz");
+        let mut matrix_file = path.clone();
+        matrix_file.push("quants_mat.gz");
 
-    let mut column_file = path.clone();
-    column_file.push("quants_mat_cols.txt");
+        let mut column_file = path.clone();
+        column_file.push("quants_mat_cols.txt");
 
-    let mut row_file = path.clone();
-    row_file.push("quants_mat_rows.txt");
+        let mut row_file = path.clone();
+        row_file.push("quants_mat_rows.txt");
 
-    Ok(MatFileNames {
-        matrix_file,
-        column_file,
-        row_file,
-    })
-}
+        Ok(MatFileNames {
+            matrix_file,
+            column_file,
+            row_file,
+        })
+    }
 
-pub fn tenx_v2_file_names(path: PathBuf) -> Result<MatFileNames, Box<dyn Error>> {
-    let mut matrix_file = path.clone();
-    matrix_file.push("matrix.mtx");
+    pub fn tenx_v2(path: PathBuf) -> Result<MatFileNames, Box<dyn Error>> {
+        let mut matrix_file = path.clone();
+        matrix_file.push("matrix.mtx");
 
-    let mut column_file = path.clone();
-    column_file.push("genes.tsv");
+        let mut column_file = path.clone();
+        column_file.push("genes.tsv");
 
-    let mut row_file = path.clone();
-    row_file.push("barcodes.tsv");
+        let mut row_file = path.clone();
+        row_file.push("barcodes.tsv");
 
-    Ok(MatFileNames {
-        matrix_file,
-        column_file,
-        row_file,
-    })
-}
+        Ok(MatFileNames {
+            matrix_file,
+            column_file,
+            row_file,
+        })
+    }
 
-pub fn tenx_v3_file_names(path: PathBuf) -> Result<MatFileNames, Box<dyn Error>> {
-    let mut matrix_file = path.clone();
-    matrix_file.push("matrix.mtx.gz");
+    pub fn tenx_v3(path: PathBuf) -> Result<MatFileNames, Box<dyn Error>> {
+        let mut matrix_file = path.clone();
+        matrix_file.push("matrix.mtx.gz");
 
-    let mut column_file = path.clone();
-    column_file.push("features.tsv.gz");
+        let mut column_file = path.clone();
+        column_file.push("features.tsv.gz");
 
-    let mut row_file = path.clone();
-    row_file.push("barcodes.tsv.gz");
+        let mut row_file = path.clone();
+        row_file.push("barcodes.tsv.gz");
 
-    Ok(MatFileNames {
-        matrix_file,
-        column_file,
-        row_file,
-    })
+        Ok(MatFileNames {
+            matrix_file,
+            column_file,
+            row_file,
+        })
+    }
 }
