@@ -26,7 +26,7 @@ pub struct SingleCellExperiment<T> {
 impl<T> fmt::Debug for SingleCellExperiment<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SingleCellExperiment")
-            .field("matrix: ", &self.shape())
+            .field("matrix (#rows, #columns)", &self.shape())
             .finish()
     }
 }
