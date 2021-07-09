@@ -8,14 +8,14 @@ impl<'a, T> IntoIterator for &'a SingleCellExperiment<T> {
         SingleCellExperimentIntoIterator {
             sce: self,
             row_id: 0,
-            row_it: self.counts.outer_iterator(),
+            row_it: Box::new(self.counts.outer_iterator()),
         }
     }
 }
 
 pub struct SingleCellExperimentRow<'a, T> {
     row_id: usize,
-    row_counts: sprs::CsVecBase<&'a [usize], &'a [T]>,
+    row_counts: sprs::CsVecBase<&'a [usize], &'a [T], T>,
     sce: &'a SingleCellExperiment<T>,
 }
 
@@ -85,7 +85,7 @@ impl<'a, T> Iterator for SingleCellExperimentIntoRow<'a, T> {
 pub struct SingleCellExperimentIntoIterator<'a, T> {
     row_id: usize,
     sce: &'a SingleCellExperiment<T>,
-    row_it: sprs::OuterIterator<'a, T, usize>,
+    row_it: Box<dyn Iterator<Item = sprs::CsVecBase<&'a [usize], &'a [T], T>> + 'a>,
 }
 
 impl<'a, T> Iterator for SingleCellExperimentIntoIterator<'a, T> {
