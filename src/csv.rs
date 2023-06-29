@@ -75,7 +75,7 @@ mod tests {
         )
     }
 
-    fn get_test_matrix_i64() -> CsMat<i64> {
+    fn get_test_matrix_usize() -> CsMat<usize> {
         CsMat::new(
             (3, 3),
             vec![0, 2, 4, 5],
@@ -98,8 +98,8 @@ mod tests {
         (a, b, c)
     }
 
-    fn get_test_sce_i64_data() -> (CsMat<i64>, Vec<String>, Vec<String>) {
-        let a = get_test_matrix_i64();
+    fn get_test_sce_usize_data() -> (CsMat<usize>, Vec<String>, Vec<String>) {
+        let a = get_test_matrix_usize();
         let b: Vec<String> = vec!["1", "2", "3"]
             .into_iter()
             .map(|x| x.to_string())
@@ -144,14 +144,14 @@ mod tests {
     }
 
     #[test]
-    fn test_csv_i64() {
-        let (a, b, c) = get_test_sce_i64_data();
+    fn test_csv_usize() {
+        let (a, b, c) = get_test_sce_usize_data();
         let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
             Ok(x) => x,
             Err(y) => panic!("ERROR: {}", y),
         };
 
-        let file = get_temp_file(".csv.i64.gz".to_owned());
+        let file = get_temp_file(".csv.usize.gz".to_owned());
         let fname = file.to_str().unwrap();
         match sce.to_csv(fname) {
             Ok(_) => (),
@@ -159,7 +159,7 @@ mod tests {
         };
         println!("{:?}", fname);
 
-        let sce_csv: SingleCellExperiment<i64> = match SingleCellExperiment::from_csv(fname, b, c) {
+        let sce_csv: SingleCellExperiment<usize> = match SingleCellExperiment::from_csv(fname, b, c) {
             Ok(x) => x,
             Err(y) => panic!("ERROR: {}", y),
         };
