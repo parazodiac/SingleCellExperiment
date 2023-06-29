@@ -12,13 +12,22 @@ pub mod iter;
 pub mod mtx;
 pub mod utils;
 
+use sprs::num_matrixmarket::Displayable;
 use sprs::CsMat;
 use std::error::Error;
 use std::fmt;
 use std::path::{Path, PathBuf};
+use trait_set::trait_set;
+
+trait_set! {
+    pub trait MatrixValueTrait = sprs::num_matrixmarket::MatrixMarketRead + sprs::num_matrixmarket::MatrixMarketConjugate + sprs::num_kinds::PrimitiveKind + std::ops::Add;
+}
 
 #[derive(PartialEq)]
-pub struct SingleCellExperiment<T> {
+pub struct SingleCellExperiment<T: MatrixValueTrait>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     counts: CsMat<T>,
     rows: Vec<String>,
     cols: Vec<String>,
@@ -30,7 +39,10 @@ pub enum MatrixKind {
     MTX,
 }
 
-impl<T> fmt::Debug for SingleCellExperiment<T> {
+impl<T: MatrixValueTrait> fmt::Debug for SingleCellExperiment<T>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SingleCellExperiment")
             .field("matrix (#rows, #columns)", &self.shape())
@@ -38,7 +50,10 @@ impl<T> fmt::Debug for SingleCellExperiment<T> {
     }
 }
 
-impl<T> SingleCellExperiment<T> {
+impl<T: MatrixValueTrait> SingleCellExperiment<T>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     pub fn cols(&self) -> usize {
         self.counts.cols()
     }
@@ -102,19 +117,21 @@ impl<T> SingleCellExperiment<T> {
         Ok(SingleCellExperiment { counts, rows, cols })
     }
 
+    /*
     pub fn from_mtx(
         file_path: &str,
         rows: Vec<String>,
         cols: Vec<String>,
     ) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
     where
-        T: Clone + num_traits::Num + num_traits::NumCast,
+        T: Clone + num_traits::Num + num_traits::NumCast + std::ops::Neg<Output=T>,
     {
         let file = Path::new(file_path);
         let counts: CsMat<T> = mtx::reader(file)?;
 
         Ok(SingleCellExperiment { counts, rows, cols })
     }
+    */
 
     pub fn from_csv(
         file_path: &str,
@@ -144,6 +161,59 @@ impl<T> SingleCellExperiment<T> {
     {
         let file = Path::new(file_path);
         csv::writer(file, self.counts())
+    }
+    /*
+    pub fn from_tenx_v2(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
+    where
+        T: Copy + num::Num + num::NumCast,
+    {
+        let file_names = file_names::MatFileNames::tenx_v2(cr_out)?;
+
+        let feature_names = utils::read_features(file_names.column_file())?;
+        let cellbarcode_names = utils::read_features(file_names.row_file())?;
+
+        Ok(SingleCellExperiment::from_mtx(
+            file_names.matrix_file().to_str().unwrap(),
+            cellbarcode_names,
+            feature_names,
+        )?)
+    }
+
+    pub fn from_tenx_v3(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
+    where
+        T: Copy + num::Num + num::NumCast,
+    {
+        let file_names = file_names::MatFileNames::tenx_v2(cr_out)?;
+
+        let feature_names = utils::read_compressed_features(file_names.column_file())?;
+        let cellbarcode_names = utils::read_compressed_features(file_names.row_file())?;
+
+        Ok(SingleCellExperiment::from_mtx(
+            file_names.matrix_file().to_str().unwrap(),
+            cellbarcode_names,
+            feature_names,
+        )?)
+    }
+    */
+}
+
+impl<T: MatrixValueTrait> SingleCellExperiment<T>
+where
+    T: std::ops::Neg<Output = T>,
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
+    pub fn from_mtx(
+        file_path: &str,
+        rows: Vec<String>,
+        cols: Vec<String>,
+    ) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
+    where
+        T: Clone + num_traits::Num + num_traits::NumCast + std::ops::Neg<Output = T>,
+    {
+        let file = Path::new(file_path);
+        let counts: CsMat<T> = mtx::reader(file)?;
+
+        Ok(SingleCellExperiment { counts, rows, cols })
     }
 
     pub fn from_tenx_v2(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
