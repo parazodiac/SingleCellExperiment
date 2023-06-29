@@ -1,6 +1,11 @@
+use crate::MatrixValueTrait;
 use crate::SingleCellExperiment;
+use sprs::num_matrixmarket::Displayable;
 
-impl<'a, T> IntoIterator for &'a SingleCellExperiment<T> {
+impl<'a, T: MatrixValueTrait> IntoIterator for &'a SingleCellExperiment<T>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     type Item = SingleCellExperimentRow<'a, T>;
     type IntoIter = SingleCellExperimentIntoIterator<'a, T>;
 
@@ -13,13 +18,19 @@ impl<'a, T> IntoIterator for &'a SingleCellExperiment<T> {
     }
 }
 
-pub struct SingleCellExperimentRow<'a, T> {
+pub struct SingleCellExperimentRow<'a, T: MatrixValueTrait>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     row_id: usize,
     row_counts: sprs::CsVecBase<&'a [usize], &'a [T], T>,
     sce: &'a SingleCellExperiment<T>,
 }
 
-impl<'a, T> SingleCellExperimentRow<'a, T> {
+impl<'a, T: MatrixValueTrait> SingleCellExperimentRow<'a, T>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     pub fn name(&'a self) -> &'a String {
         &self.sce.rows[self.row_id]
     }
@@ -29,7 +40,10 @@ impl<'a, T> SingleCellExperimentRow<'a, T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a SingleCellExperimentRow<'a, T> {
+impl<'a, T: MatrixValueTrait> IntoIterator for &'a SingleCellExperimentRow<'a, T>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     type Item = SingleCellExperimentEntry<'a, T>;
     type IntoIter = SingleCellExperimentIntoRow<'a, T>;
 
@@ -41,13 +55,19 @@ impl<'a, T> IntoIterator for &'a SingleCellExperimentRow<'a, T> {
     }
 }
 
-pub struct SingleCellExperimentEntry<'a, T> {
+pub struct SingleCellExperimentEntry<'a, T: MatrixValueTrait>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     sce: &'a SingleCellExperiment<T>,
     count: &'a T,
     col_id: usize,
 }
 
-impl<'a, T> SingleCellExperimentEntry<'a, T> {
+impl<'a, T: MatrixValueTrait> SingleCellExperimentEntry<'a, T>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     pub fn id(&self) -> usize {
         self.col_id
     }
@@ -61,12 +81,18 @@ impl<'a, T> SingleCellExperimentEntry<'a, T> {
     }
 }
 
-pub struct SingleCellExperimentIntoRow<'a, T> {
+pub struct SingleCellExperimentIntoRow<'a, T: MatrixValueTrait>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     sce: &'a SingleCellExperiment<T>,
     row_it: sprs::vec::VectorIterator<'a, T, usize>,
 }
 
-impl<'a, T> Iterator for SingleCellExperimentIntoRow<'a, T> {
+impl<'a, T: MatrixValueTrait> Iterator for SingleCellExperimentIntoRow<'a, T>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     type Item = SingleCellExperimentEntry<'a, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -82,13 +108,19 @@ impl<'a, T> Iterator for SingleCellExperimentIntoRow<'a, T> {
     }
 }
 
-pub struct SingleCellExperimentIntoIterator<'a, T> {
+pub struct SingleCellExperimentIntoIterator<'a, T: MatrixValueTrait>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     row_id: usize,
     sce: &'a SingleCellExperiment<T>,
     row_it: Box<dyn Iterator<Item = sprs::CsVecBase<&'a [usize], &'a [T], T>> + 'a>,
 }
 
-impl<'a, T> Iterator for SingleCellExperimentIntoIterator<'a, T> {
+impl<'a, T: MatrixValueTrait> Iterator for SingleCellExperimentIntoIterator<'a, T>
+where
+    for<'n> Displayable<&'n T>: std::fmt::Display,
+{
     type Item = SingleCellExperimentRow<'a, T>;
 
     fn next(&mut self) -> Option<Self::Item> {

@@ -1,20 +1,25 @@
+use crate::MatrixValueTrait;
+use sprs::num_matrixmarket::Displayable;
 use sprs::CsMat;
 use std::error::Error;
 use std::path::Path;
 
 // reads the MTX format single cell matrix from the given path
-pub fn reader<MatValT>(file_path: &Path) -> Result<CsMat<MatValT>, Box<dyn Error>>
+pub fn reader<MatValT: MatrixValueTrait>(file_path: &Path) -> Result<CsMat<MatValT>, Box<dyn Error>>
 where
-    MatValT: Clone + num_traits::Num + num_traits::NumCast,
+    MatValT: std::clone::Clone + std::ops::Add<Output = MatValT> + std::ops::Neg<Output = MatValT>,
 {
     let matrix = sprs::io::read_matrix_market(file_path)?;
     Ok(matrix.to_csr())
 }
 
 // writes the MTX format single cell matrix from the given path
-pub fn writer<MatValT>(file_path: &Path, matrix: &CsMat<MatValT>) -> Result<(), Box<dyn Error>>
+pub fn writer<MatValT: MatrixValueTrait>(
+    file_path: &Path,
+    matrix: &CsMat<MatValT>,
+) -> Result<(), Box<dyn Error>>
 where
-    MatValT: std::fmt::Display + Copy + sprs::num_kinds::PrimitiveKind,
+    for<'n> Displayable<&'n MatValT>: std::fmt::Display,
 {
     let file_path = file_path.to_str().expect("can't extract file path");
     sprs::io::write_matrix_market(file_path, matrix)?;
@@ -35,7 +40,7 @@ mod tests {
         )
     }
 
-    fn get_test_matrix_usize() -> CsMat<usize> {
+    fn get_test_matrix_i64() -> CsMat<i64> {
         CsMat::new(
             (3, 3),
             vec![0, 2, 4, 5],
@@ -58,8 +63,8 @@ mod tests {
         (a, b, c)
     }
 
-    fn get_test_sce_usize_data() -> (CsMat<usize>, Vec<String>, Vec<String>) {
-        let a = get_test_matrix_usize();
+    fn get_test_sce_i64_data() -> (CsMat<i64>, Vec<String>, Vec<String>) {
+        let a = get_test_matrix_i64();
         let b: Vec<String> = vec!["1", "2", "3"]
             .into_iter()
             .map(|x| x.to_string())
@@ -104,14 +109,14 @@ mod tests {
     }
 
     #[test]
-    fn test_mtx_usize() {
-        let (a, b, c) = get_test_sce_usize_data();
+    fn test_mtx_i64() {
+        let (a, b, c) = get_test_sce_i64_data();
         let sce = match SingleCellExperiment::from_csr(a, b.clone(), c.clone()) {
             Ok(x) => x,
             Err(_) => unreachable!(),
         };
 
-        let file = get_temp_file("_usize.mtx".to_owned());
+        let file = get_temp_file("_i64.mtx".to_owned());
         let fname = file.to_str().unwrap();
         match sce.to_mtx(fname) {
             Ok(_) => (),
@@ -119,8 +124,7 @@ mod tests {
         };
         println!("{:?}", fname);
 
-        let sce_mtx: SingleCellExperiment<usize> = match SingleCellExperiment::from_mtx(fname, b, c)
-        {
+        let sce_mtx: SingleCellExperiment<i64> = match SingleCellExperiment::from_mtx(fname, b, c) {
             Ok(x) => x,
             Err(y) => panic!("ERROR: {}", y),
         };

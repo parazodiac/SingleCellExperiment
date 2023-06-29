@@ -46,7 +46,7 @@ impl MatFileNames {
         let mut column_file = path.clone();
         column_file.push("genes.tsv");
 
-        let mut row_file = path.clone();
+        let mut row_file = path;
         row_file.push("barcodes.tsv");
 
         Ok(MatFileNames {
@@ -63,7 +63,7 @@ impl MatFileNames {
         let mut column_file = path.clone();
         column_file.push("features.tsv.gz");
 
-        let mut row_file = path.clone();
+        let mut row_file = path;
         row_file.push("barcodes.tsv.gz");
 
         Ok(MatFileNames {

@@ -1,8 +1,8 @@
 [package]
 name = "sce"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["Avi Srivastava <avi.srivastava@nyu.edu>", "Rob Patro <rob@cs.umd.edu>"]
-edition = "2018"
+edition = "2021"
 description = "A library for importing and managing various single-cell matrices."
 license-file = "LICENSE"
 readme= "README.md"
@@ -21,8 +21,9 @@ categories = ["command-line-utilities", "science"]
 
 [dependencies]
 num = "0.4.0"
-csv = "1.1.6"
-sprs = "0.11.0"
-flate2 = "1.0.23"
+csv = "1.2.2"
+sprs = "0.11.1"
+flate2 = "1.0.26"
 byteorder = "1.4.3"
 num-traits = "0.2.15"
+trait-set = "0.3.0"

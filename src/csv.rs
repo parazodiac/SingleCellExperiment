@@ -48,8 +48,8 @@ where
     for row_vec in matrix.outer_iterator() {
         columns.iter_mut().for_each(|x| *x = zero);
 
-        let mut it = row_vec.iter();
-        while let Some((col_idx, &val)) = it.next() {
+        let it = row_vec.iter();
+        for (col_idx, &val) in it {
             columns[col_idx] = val;
         }
 

@@ -55,7 +55,7 @@ pub fn reader(
     num_cols: usize,
 ) -> Result<CsMat<MatValT>, Box<dyn Error>> {
     // reading the matrix
-    let file_handle = File::open(file_path.to_owned())?;
+    let file_handle = File::open(file_path)?;
     let buffered = BufReader::new(file_handle);
     let file = GzDecoder::new(buffered);
 
@@ -91,8 +91,8 @@ pub fn reader(
         }
         assert_eq!(num_ones, one_validator);
 
-        let mut expression: Vec<u8> = vec![0; mem::size_of::<MatValT>() * (num_ones as usize)];
-        let mut float_buffer: Vec<MatValT> = vec![0.0; num_ones as usize];
+        let mut expression: Vec<u8> = vec![0; mem::size_of::<MatValT>() * num_ones];
+        let mut float_buffer: Vec<MatValT> = vec![0.0; num_ones];
         file.read_exact(&mut expression[..])?;
 
         // NOTE: if we change MatValT, double check below line
