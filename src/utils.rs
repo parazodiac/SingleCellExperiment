@@ -7,7 +7,7 @@ use flate2::read::GzDecoder;
 
 pub fn read_features(file_path: PathBuf) -> Result<Vec<String>, Box<dyn Error>> {
     let file_content = std::fs::read_to_string(file_path)?;
-    let mut features: Vec<String> = file_content.split("\n").map(|x| x.to_owned()).collect();
+    let mut features: Vec<String> = file_content.split('\n').map(|x| x.to_owned()).collect();
     features.pop();
 
     Ok(features)
@@ -18,7 +18,7 @@ pub fn read_compressed_features(file_path: PathBuf) -> Result<Vec<String>, Box<d
     let mut file_content = String::new();
     gz.read_to_string(&mut file_content)?;
 
-    let mut features: Vec<String> = file_content.split("\n").map(|x| x.to_owned()).collect();
+    let mut features: Vec<String> = file_content.split('\n').map(|x| x.to_owned()).collect();
     features.pop();
 
     Ok(features)

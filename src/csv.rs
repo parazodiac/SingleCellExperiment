@@ -48,8 +48,8 @@ where
     for row_vec in matrix.outer_iterator() {
         columns.iter_mut().for_each(|x| *x = zero);
 
-        let mut it = row_vec.iter();
-        while let Some((col_idx, &val)) = it.next() {
+        let it = row_vec.iter();
+        for (col_idx, &val) in it {
             columns[col_idx] = val;
         }
 
@@ -159,7 +159,8 @@ mod tests {
         };
         println!("{:?}", fname);
 
-        let sce_csv: SingleCellExperiment<usize> = match SingleCellExperiment::from_csv(fname, b, c) {
+        let sce_csv: SingleCellExperiment<usize> = match SingleCellExperiment::from_csv(fname, b, c)
+        {
             Ok(x) => x,
             Err(y) => panic!("ERROR: {}", y),
         };

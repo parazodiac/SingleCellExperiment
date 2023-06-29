@@ -225,11 +225,11 @@ where
         let feature_names = utils::read_features(file_names.column_file())?;
         let cellbarcode_names = utils::read_features(file_names.row_file())?;
 
-        Ok(SingleCellExperiment::from_mtx(
+        SingleCellExperiment::from_mtx(
             file_names.matrix_file().to_str().unwrap(),
             cellbarcode_names,
             feature_names,
-        )?)
+        )
     }
 
     pub fn from_tenx_v3(cr_out: PathBuf) -> Result<SingleCellExperiment<T>, Box<dyn Error>>
@@ -241,11 +241,11 @@ where
         let feature_names = utils::read_compressed_features(file_names.column_file())?;
         let cellbarcode_names = utils::read_compressed_features(file_names.row_file())?;
 
-        Ok(SingleCellExperiment::from_mtx(
+        SingleCellExperiment::from_mtx(
             file_names.matrix_file().to_str().unwrap(),
             cellbarcode_names,
             feature_names,
-        )?)
+        )
     }
 }
 
@@ -272,11 +272,11 @@ impl SingleCellExperiment<f32> {
         let feature_names = utils::read_features(file_names.column_file())?;
         let cellbarcode_names = utils::read_features(file_names.row_file())?;
 
-        Ok(SingleCellExperiment::from_eds(
+        SingleCellExperiment::from_eds(
             file_names.matrix_file().to_str().unwrap(),
             cellbarcode_names,
             feature_names,
-        )?)
+        )
     }
 
     pub fn from_mat_file_names(
